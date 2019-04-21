@@ -30,10 +30,10 @@ POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include "Sodaq_R4X.h"
-#include <Sodaq_wdt.h>
+// #include <Sodaq_wdt.h>
 #include "time.h"
 
-//#define DEBUG
+#define DEBUG
 
 #define EPOCH_TIME_OFF             946684800  /* This is 1st January 2000, 00:00:00 in epoch time */
 #define EPOCH_TIME_YEAR_OFF        100        /* years since 1900 */
@@ -227,10 +227,11 @@ bool Sodaq_R4X::connect(const char* apn, const char* urat, const char* bandMask)
         return false;
     }
 
-    if (millis() - tm > ATTACH_NEED_REBOOT) {
-        reboot();
-        sodaq_wdt_safe_delay(REBOOT_DELAY);
-    }
+    // if (millis() - tm > ATTACH_NEED_REBOOT) {
+    //     reboot();
+    //     // sodaq_wdt_safe_delay(REBOOT_DELAY);
+    //     delay(REBOOT_DELAY);
+    // }
 
     return execCommand("AT+UDCONF=1,1") && doSIMcheck();
 }
@@ -258,7 +259,8 @@ bool Sodaq_R4X::attachGprs(uint32_t timeout)
             }
         }
 
-        sodaq_wdt_safe_delay(delay_count);
+        // sodaq_wdt_safe_delay(delay_count);
+        delay(delay_count);
 
         // Next time wait a little longer, but not longer than 5 seconds
         if (delay_count < 5000) {
@@ -599,7 +601,7 @@ size_t Sodaq_R4X::socketRead(uint8_t socketID, uint8_t* buffer, size_t size)
         return 0;
     }
 
-    size = min(size, min(SODAQ_R4X_MAX_SOCKET_BUFFER, _socketPendingBytes[socketID]));
+    size = min((int)size, min(SODAQ_R4X_MAX_SOCKET_BUFFER, (int)_socketPendingBytes[socketID]));
 
     char   outBuffer[SODAQ_R4X_MAX_SOCKET_BUFFER];
     int    retSocketID;
@@ -641,7 +643,7 @@ size_t Sodaq_R4X::socketReceive(uint8_t socketID, uint8_t* buffer, size_t size)
         return 0;
     }
 
-    size = min(size, min(SODAQ_R4X_MAX_SOCKET_BUFFER, _socketPendingBytes[socketID]));
+    size = min((int)size, min(SODAQ_R4X_MAX_SOCKET_BUFFER, (int)_socketPendingBytes[socketID]));
 
     char   outBuffer[SODAQ_R4X_MAX_SOCKET_BUFFER];
     int    retSocketID;
@@ -748,7 +750,8 @@ bool Sodaq_R4X::socketWaitForClose(uint8_t socketID, uint32_t timeout)
     uint32_t startTime = millis();
 
     while (isAlive() && !socketIsClosed(socketID) && !is_timedout(startTime, timeout)) {
-        sodaq_wdt_safe_delay(10);
+        // sodaq_wdt_safe_delay(10);
+        delay(10);
     }
 
     return socketIsClosed(socketID);
@@ -778,7 +781,8 @@ bool Sodaq_R4X::socketWaitForRead(uint8_t socketID, uint32_t timeout)
             }
         }
 
-        sodaq_wdt_safe_delay(10);
+        // sodaq_wdt_safe_delay(10);
+        delay(10);
     }
 
     return socketHasPendingBytes(socketID);
@@ -808,7 +812,8 @@ bool Sodaq_R4X::socketWaitForReceive(uint8_t socketID, uint32_t timeout)
             }
         }
 
-        sodaq_wdt_safe_delay(10);
+        // sodaq_wdt_safe_delay(10);
+        delay(10);
     }
 
     return socketHasPendingBytes(socketID);
@@ -904,7 +909,7 @@ void Sodaq_R4X::mqttLoop()
     }
 
     int count = readLn(_inputBuffer, _inputBufferSize, 250); // 250ms, how many bytes at which baudrate?
-    sodaq_wdt_reset();
+    // sodaq_wdt_reset();
 
     if (count <= 0) {
         return;
@@ -990,7 +995,7 @@ uint16_t Sodaq_R4X::mqttReadMessages(char* buffer, size_t size, uint32_t timeout
 
     while (messages < _mqttPendingMessages && !is_timedout(startTime, timeout)) {
         int count = readLn(_inputBuffer, _inputBufferSize, 250);
-        sodaq_wdt_reset();
+        // sodaq_wdt_reset();
 
         if (count <= 0) {
             continue;
@@ -1410,7 +1415,8 @@ size_t Sodaq_R4X::httpRequest(const char* server, uint16_t port, const char* end
             }
         }
 
-        sodaq_wdt_safe_delay(delay_count);
+        // sodaq_wdt_safe_delay(delay_count);
+        delay(delay_count);
         // Next time wait a little longer, but not longer than 5 seconds
         if (delay_count < 5000) {
             delay_count += 250;
@@ -1522,7 +1528,8 @@ size_t Sodaq_R4X::httpRequestFromFile(const char* server, uint16_t port, const c
             }
         }
 
-        sodaq_wdt_safe_delay(delay_count);
+        // sodaq_wdt_safe_delay(delay_count);
+        delay(delay_count);
         // Next time wait a little longer, but not longer than 5 seconds
         if (delay_count < 5000) {
             delay_count += 250;
@@ -1827,10 +1834,11 @@ bool Sodaq_R4X::checkBandMask(const char* requiredURAT, const char* requiredBank
         return true;
     }
 
-    print("AT+UBANDMASK=1,");
-    println(requiredBankMask);
+    // print("AT+UBANDMASK=1,");
+    // println(requiredBankMask);
 
-    return (readResponse() == GSMResponseOK);
+    // return (readResponse() == GSMResponseOK);
+    return true;
 }
 
 bool Sodaq_R4X::checkCFUN()
@@ -2012,7 +2020,8 @@ bool Sodaq_R4X::doSIMcheck()
 
     for (uint8_t i = 0; i < retry_count; i++) {
         if (i > 0) {
-            sodaq_wdt_safe_delay(250);
+            // sodaq_wdt_safe_delay(250);
+            delay(250);
         }
 
         SimStatuses simStatus = getSimStatus();
@@ -2111,7 +2120,7 @@ GSMResponseTypes Sodaq_R4X::readResponse(char* outBuffer, size_t outMaxSize, con
 
     while (!is_timedout(from, timeout)) {
         int count = readLn(_inputBuffer, _inputBufferSize, 250); // 250ms, how many bytes at which baudrate?
-        sodaq_wdt_reset();
+        // sodaq_wdt_reset();
 
         if (count <= 0) {
             continue;
@@ -2208,7 +2217,8 @@ bool Sodaq_R4X::waitForSignalQuality(uint32_t timeout)
             }
         }
 
-        sodaq_wdt_safe_delay(delay_count);
+        // sodaq_wdt_safe_delay(delay_count);
+        delay(delay_count);
 
         // Next time wait a little longer, but not longer than 5 seconds
         if (delay_count < 5000) {
@@ -2540,7 +2550,8 @@ void Sodaq_SARA_R4XX_OnOff::on()
     pinMode(SARA_R4XX_TOGGLE, OUTPUT);
     digitalWrite(SARA_R4XX_TOGGLE, LOW);
     // We should be able to reduce this to 50ms or something
-    sodaq_wdt_safe_delay(2000);
+    // sodaq_wdt_safe_delay(2000);
+    delay(2000);
     pinMode(SARA_R4XX_TOGGLE, INPUT);
 
     _onoff_status = true;
