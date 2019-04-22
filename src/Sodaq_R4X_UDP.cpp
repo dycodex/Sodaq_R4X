@@ -115,7 +115,7 @@ size_t Sodaq_R4X_UDP::write(const uint8_t* buffer, size_t size) {
 }
 
 int Sodaq_R4X_UDP::parsePacket() {
-    if (_rxBuffer && !_rxBuffer->empty()) {
+    if (_rxBuffer) {
         return 0;
     }
 
@@ -125,12 +125,7 @@ int Sodaq_R4X_UDP::parsePacket() {
         return 0;
     }
 
-    if (!_rxBuffer) {
-        _rxBuffer = new cbuf(readLength);
-    } else {
-        _rxBuffer->flush();
-    }
-
+    _rxBuffer = new cbuf(readLength);
     _rxBuffer->write((const char*)buffer, readLength);
 
     return readLength;
