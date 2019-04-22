@@ -316,6 +316,8 @@ public:
     bool   writeFile(const char* filename, const uint8_t* buffer, size_t size);
 
 
+    void   reboot();
+
 private:
     /******************************************************************************
     * Private
@@ -343,7 +345,6 @@ private:
     GSMResponseTypes readResponse(char* outBuffer = NULL, size_t outMaxSize = 0, const char* prefix = NULL,
                                   uint32_t timeout = DEFAULT_READ_MS);
 
-    void   reboot();
     bool   setSimPin(const char* simPin);
     bool   waitForSignalQuality(uint32_t timeout = 5L * 60L * 1000);
 

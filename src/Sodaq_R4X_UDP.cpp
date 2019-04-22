@@ -115,17 +115,22 @@ size_t Sodaq_R4X_UDP::write(const uint8_t* buffer, size_t size) {
 }
 
 int Sodaq_R4X_UDP::parsePacket() {
-    if (_rxBuffer) {
+    if (_rxBuffer && !_rxBuffer->empty()) {
         return 0;
     }
 
     uint8_t buffer[512] = {0};
     int readLength = _nbiot->socketReceive(_socket, buffer, 512);
-    if (readLength == -1) {
+    if (readLength < 1) {
         return 0;
     }
 
-    _rxBuffer = new cbuf(readLength);
+    if (!_rxBuffer) {
+        _rxBuffer = new cbuf(readLength);
+    } else {
+        _rxBuffer->flush();
+    }
+
     _rxBuffer->write((const char*)buffer, readLength);
 
     return readLength;
